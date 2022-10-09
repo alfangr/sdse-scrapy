@@ -4,17 +4,84 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Scrapy</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body>
-    <div id="app">
 
+    <div class="container mx-auto px-4">
+        <div class="rounded shadow-lg">
+            <canvas id="chart-jobs"></canvas>
+        </div>
     </div>
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script type="text/javascript" src="scripts/source.js"></script> 
+    <script type="text/javascript" src="scripts/source.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
-        console.log(sourceUrl);
+        var keywords = {};
+        fetch(`https://cors-anywhere.herokuapp.com/${urls.glintsFE}`)
+            .then((response) => response.text())
+            .then((data) => {
+                const myHtmlString = data;
+                const htmlDom = new DOMParser().parseFromString(myHtmlString, 'text/html');
+                const output = htmlDom.querySelector(".ExploreTabsc__JobCount-sc-gs9c0s-4.iAPXyD");
+                const outputString = output.textContent;
+                const words = outputString.split(' ');
+                keywords.frontend = words[0];
+                this.fetchBackend();
+            });
+
+        function fetchBackend() {
+            fetch(`https://cors-anywhere.herokuapp.com/${urls.glintsBE}`)
+            .then((response) => response.text())
+            .then((data) => {
+                const myHtmlString = data;
+                const htmlDom = new DOMParser().parseFromString(myHtmlString, 'text/html');
+                const output = htmlDom.querySelector(".ExploreTabsc__JobCount-sc-gs9c0s-4.iAPXyD");
+                const outputString = output.textContent;
+                const words = outputString.split(' ');
+                keywords.backend = words[0];
+                this.loadChart();
+            });
+        }
+
+        function loadChart() {
+            // load chartjs
+            const ctx = document.getElementById('chart-jobs').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Frontend', 'Backend', 'UI/UX', 'Devops', 'QA'],
+                    datasets: [{
+                        label: '# of Votes',
+                        data: [keywords.frontend, keywords.backend, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(153, 102, 255, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
